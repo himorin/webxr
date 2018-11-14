@@ -280,6 +280,78 @@ When the canvas receives a `pointerdown` event an `XRInputSource` is created wit
 
 For each of these events the `XRInputSource`'s target ray must be updated to originate at the point that was interacted with on the canvas, projected onto the near clipping plane (defined by the `depthNear` attribute of the `XRSession`) and extending out into the scene along that projected vector.
 
+## Button and Axis State
+
+Some applications need more than point-and-click style interaction provided by the `select` events. For devices that make use of controllers with buttons and axes, more complete information about the state of those inputs can be observed via the `XRInputSource`'s `gamepad` attribute.
+
+If the `XRInputState` represents an XR controller device with buttons or axes the `gamepad` attribute is an instance of a [`Gamepad`](https://w3c.github.io/gamepad/#gamepad-interface) interface, and `null` otherwise. Examples of controllers that may expose their state this way include Oculus Touch, Vive wands, Oculus Go and Daydream controllers, or other similar devices. More traditional gamepads, such as XBox or Playstation controllers, should not be exposed using this interface, nor should tracked devices without discreet inputs, such as optical hand tracking.
+
+`Gamepad` instances reported in this way have several notable behavioral changes vs. the ones reported by `navigator.getGamepads()`:
+
+ - `Gamepad` instances connected to an `XRInputSource` must not be included in the array returned by `navigator.getGamepads()`.
+ - The `Gamepad`'s `id` attribute must be empty string. The `XRInputState`'s `renderId` attribute should be used instead to identify the device.
+ - The `Gamepad`'s `index` attribute must be `-1`.
+ - The `Gamepad`'s `connected` attribute must always be `true`.
+ - The `Gamepad`'s `mapping` attribute must be `xr-standard`.
+
+All other attributes behave as described in the [Gamepad](https://w3c.github.io/gamepad/) specification.
+
+The WebXR Device API introduces a new standard controller layout indicated by the `mapping` value of `xr-standard`. (Additional mapping variants may be added in the future if necessary.) This defines a specific layout for the inputs most commonly found on XR controller devices today. The following table describes the buttons/axes and their physical locations:
+
+| Button/Axis  | Location                |
+| ------------ | ----------------------- |
+| buttons[0]   | Primary trigger         |
+| buttons[1]   | Touchpad/Joystick click |
+| buttons[2]   | Grip/Secondary trigger  |
+| axes[0]      | Touchpad/Joystick X     |
+| axes[1]      | Touchpad/Joystick Y     |
+
+Additional device-specific inputs may be exposed after these reserved indices, but devices that lack one of the canonical inputs must still preserve their place in the array. If a device has both a touchpad and a joystick the UA should designate one of them to be the primary axis-based input and expose the other at axes[2] and axes[3] with an associated button at button[4].
+
+```js
+function onXRFrame(timestamp, frame) {
+  let inputSource = xrSession.getInputSources()[0];
+
+  // Check to see if the input source has buttons/axes.
+  if (inputSource.gamepad) {
+    
+    // Use joystick or touchpad values for movement.
+    MoveUser(gamepad.axes[0], gamepad.axes[0]);
+
+    // Use the trigger or joystick/touchpad click for painting.
+    if (gamepad.buttons[0].pressed || gamepad.buttons[1].pressed) {
+      EmitPaint();
+    }
+    
+    // etc.
+  }
+
+  // Do the rest of typical frame processing...
+}
+```
+
+If the application includes interactions that require user activation (such as starting media playback), the application can listen to the `XRInputSource`s `select` events, which fire for every pressed and released button on the controller. When triggered by a controller input, the `XRInputSourceEvent` will include a `buttonIndex` other than `-1` to indicate which button on the gamepad triggered the event.
+
+The UA may update the `gamepad` state at any point, but it must remain constant while running a batch of `XRSession` `requestAnimationFrame` callbacks.
+
+### Exposing gamepad values with an action maps
+
+Some native APIs rely on what's commonly referred to as an "action mapping" system to handle controller input. In action map systems the developer creates a list of application-specific actions (such as "undo" or "jump") and suggested input bindings (like "left hand touchpad") that should trigger the related action. Such systems may allow users to re-bind the inputs associated with each action, and may not provide a mechanism for enumerating or monitoring the inputs outside of the action map.
+
+When using an API that limits reading controller input to use of an action map, it is suggested that a mapping be created with one action per possible input, given the same name as the target input. For example, an similar mapping to the following may be used for each device:
+
+| Button/Axis | Action name      | Sample binding            |
+|-------------|------------------|---------------------------|
+| button[0]   | "trigger"        | "[device]/trigger"        |
+| button[1]   | "touchpad-click" | "[device]/touchpad/click" |
+| button[2]   | "grip"           | "[device]/grip"           |
+| axis[0]     | "touchpad-x"     | "[device]/touchpad/x"     |
+| axis[1]     | "touchpad-y"     | "[device]/touchpad/y"     |
+
+If the API does not provided a way to enumerate the available input devices, the UA should provide bindings for the left and right hand instead of a specific device and expose a `Gamepad` for any hand that has at least one non-`null` input.
+
+The UA should not make any attempt to circumvent user remapping of the inputs.
+
 ## Appendix A: Proposed partial IDL
 This is a partial IDL and is considered additive to the core IDL found in the main [explainer](explainer.md).
 ```webidl
@@ -337,7 +409,27 @@ interface XRInputSource {
   readonly attribute XRTargetRayMode targetRayMode;
   readonly attribute XRSpace targetRaySpace;
   readonly attribute XRSpace? gripSpace;
+  readonly attribute Gamepad? gamepad;
 };
+
+//--------------------------------------------------------------------
+// FIXME: Remove before sending to Nell. For temporary reference only.
+interface Gamepad {
+  readonly attribute DOMString id; // Empty string or duplicate renderId
+  readonly attribute long index; // Always -1?
+  readonly attribute boolean connected; // Always true
+  readonly attribute DOMHighResTimeStamp timestamp; // Unsure. Same as rAF timestamp?
+  readonly attribute GamepadMappingType mapping;
+  readonly attribute FrozenArray<double> axes;
+  readonly attribute FrozenArray<GamepadButton> buttons;
+};
+
+interface GamepadButton {
+  readonly attribute boolean pressed;
+  readonly attribute boolean touched;
+  readonly attribute double value;
+};
+//--------------------------------------------------------------------
 
 //
 // Events
@@ -357,10 +449,12 @@ dictionary XRSessionEventInit : EventInit {
 interface XRInputSourceEvent : Event {
   readonly attribute XRFrame frame;
   readonly attribute XRInputSource inputSource;
+  readonly attribute long buttonIndex;
 };
 
 dictionary XRInputSourceEventInit : EventInit {
   required XRFrame frame;
   required XRInputSource inputSource;
+  long buttonIndex = -1;
 };
 ```
