@@ -1215,7 +1215,7 @@ Possible extra rowspan handling
   <link href="https://www.w3.org/StyleSheets/TR/2016/W3C-WD" rel="stylesheet" type="text/css">
   <meta content="Bikeshed version b76a1f3caa65320a39ee72dbf2680ea887ace619" name="generator">
   <link href="https://www.w3.org/TR/webxr/" rel="canonical">
-  <meta content="b829ad36470ff3ddc93d1a3d57f25abbe5e520a2" name="document-revision">
+  <meta content="9a218766de4dcd6ed4ad74ee7f9e1ee737b20b2d" name="document-revision">
   <link href="favicon-32x32.png" rel="icon" sizes="32x32" type="image/png">
   <link href="favicon-96x96.png" rel="icon" sizes="96x96" type="image/png">
 <style>
@@ -2941,13 +2941,13 @@ a3 a7 a11 a15     1     a3 * X + a7 * Y + a11 * Z + a15
       <p>If the operation <code class="idl"><a data-link-type="idl" href="https://tc39.github.io/ecma262/#sec-isdetachedbuffer" id="ref-for-sec-isdetachedbuffer①">IsDetachedBuffer</a></code> on <a data-link-type="dfn" href="#xrrigidtransform-internal-matrix" id="ref-for-xrrigidtransform-internal-matrix②">internal matrix</a> is <code>false</code>, return <var>transform</var>’s <a data-link-type="dfn" href="#xrrigidtransform-internal-matrix" id="ref-for-xrrigidtransform-internal-matrix③">internal matrix</a>.</p>
      <li data-md>
       <p>Let <var>translation</var> be a new <a data-link-type="dfn" href="#matrix" id="ref-for-matrix④">matrix</a> which is a column-vector translation matrix corresponding to <code class="idl"><a data-link-type="idl" href="#dom-xrrigidtransform-position" id="ref-for-dom-xrrigidtransform-position①②">position</a></code>. Mathematically, if <code class="idl"><a data-link-type="idl" href="#dom-xrrigidtransform-position" id="ref-for-dom-xrrigidtransform-position①③">position</a></code> is <code>(x, y, z)</code>, this matrix is</p>
-      <p><img src="images/translation_matrix.svg"></p>
+      <p><img alt="Mathematical expression for column-vector translation matrix" src="images/translation_matrix.svg"></p>
      <li data-md>
       <p>Let <var>rotation</var> be a new <a data-link-type="dfn" href="#matrix" id="ref-for-matrix⑤">matrix</a> which is a column-vector rotation matrix corresponding to <code class="idl"><a data-link-type="idl" href="#dom-xrrigidtransform-orientation" id="ref-for-dom-xrrigidtransform-orientation①④">orientation</a></code>. Mathematically, if <code class="idl"><a data-link-type="idl" href="#dom-xrrigidtransform-orientation" id="ref-for-dom-xrrigidtransform-orientation①⑤">orientation</a></code> is the unit quaternion <code>(q<sub>x</sub>, q<sub>y</sub>, q<sub>z</sub>, q<sub>w</sub>)</code>, this matrix is</p>
-      <p><img src="images/rotation_matrix.svg"></p>
+      <p><img alt="Mathematical expression for column-vector rotation matrix" src="images/rotation_matrix.svg"></p>
      <li data-md>
       <p>Set <var>transform</var>’s <a data-link-type="dfn" href="#xrrigidtransform-internal-matrix" id="ref-for-xrrigidtransform-internal-matrix④">internal matrix</a> to a new <a data-link-type="dfn" href="#matrix" id="ref-for-matrix⑥">matrix</a> set to the result of multiplying <var>translation</var> and <var>rotation</var> with <var>translation</var> on the left (<code>translation * rotation</code>). Mathematically, this matrix is</p>
-      <p><img src="images/rigid_matrix.svg"></p>
+      <p><img alt="Mathematical expression for matrix of multiplying translation and rotation with translation on the left" src="images/rigid_matrix.svg"></p>
      <li data-md>
       <p>Return <var>transform</var>’s <a data-link-type="dfn" href="#xrrigidtransform-internal-matrix" id="ref-for-xrrigidtransform-internal-matrix⑤">internal matrix</a>.</p>
     </ol>
