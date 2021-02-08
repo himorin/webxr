@@ -74,19 +74,43 @@ When sensitive information can be exposed, the requesting document must be:
 * The [currently focused area](https://html.spec.whatwg.org/multipage/interaction.html#currently-focused-area-of-a-top-level-browsing-context)
 * Of the [same origin-domain](https://html.spec.whatwg.org/multipage/origin.html#same-origin-domain) as the [active document](https://html.spec.whatwg.org/multipage/browsers.html#active-document)
 * Of an origin not blocked by [feature policy](#feature-policy)
-* **TODO** Address the outcome of [#732](https://github.com/immersive-web/webxr/issues/732)
 
 ### Focus and visibility
-**TODO** Fill this in with what is agreed upon in [#724](https://github.com/immersive-web/webxr/issues/724) and [#696](https://github.com/immersive-web/webxr/issues/696).
+XRSessions may have one of three visibility states: visible, visible-blurred, and hidden. When the user is interacting with a potentially sensitive UI from the UA (like URL entry), XRSessions must have their [visibility state set to hidden or visible-blurred](https://github.com/immersive-web/webxr/issues/724). If the visibility state is set to visible-blurred in this situation, the following restrictions must be placed on data delivered to sessions:
+-**TODO** fill in with what's agreed upon in [#743](https://github.com/immersive-web/webxr/issues/743)
+
+In this situation, WebXR must be structured to protect users from 'input sniffing,' for example, using pose data to infer what keyboard input a user has typed during password entry. For this reason, pose data should only be available to a session that is visible and same-origin to the currently focused area while a Trusted UI is displayed to the user.
+
+However, visible-blurred should not be viewed as a substitute for TrustedUI and applications should not infer that 'visible-blurred' state indicates that the user is performing a sensitive task.
+
 
 ### Feature policy
-**TODO** Fill this in with what is agreed upon in [#308](https://github.com/immersive-web/webxr/issues/308), [#729](https://github.com/immersive-web/webxr/issues/729), [#730](https://github.com/immersive-web/webxr/issues/730), and [#731](https://github.com/immersive-web/webxr/issues/731).
+All features in core WebXR module are controlled by the [feature policy "xr-spatial-tracking."](https://github.com/immersive-web/webxr/issues/729)
 
 #### Underlying sensors feature policy
 In addition to the WebXR specific feature policy, feature policies for underlying sensors must also be respected if a site could isolate and extract sensor data that would otherwise be blocked by those feature policies. WebXR must not be a 'back door' for accessing data that is otherwise prevented.
 
 ## Trusted UI
-**TODO** Fill this in with what is agreed upon in [#718](https://github.com/immersive-web/webxr/issues/718) and [#719](https://github.com/immersive-web/webxr/issues/719).
+The concept of [“Trusted UI”](https://github.com/immersive-web/webxr/issues/719) is what allows User Agents to display a UI to end users on which sensitive information can be displayed and interacted with such that a website cannot snoop on it and cannot spoof it. Some features which use Trusted UI are user consent prompts, URL bars, navigation controls, favorite/bookmarks, and many more.
+
+In 2D browsers, Trusted UI is presented either exclusively around the outside of a web page’s visual container or overlapping with it partially. In the context of an immersive experience, the definition of a [“Trusted Immersive UI”](https://github.com/immersive-web/webxr/issues/718) is a bit more complex due to the fact there is no “outside” of immersive content; all pixels the user sees are rendered by the immersive content.
+
+User agents must support a Trusted UI with the following properties:
+- non-spoofable
+- indicates where the request/content displayed originates from
+- if it relies on a shared secret with the user, the shared secret must be unobservable by an MR capture
+- it is consistent between immersive experiences in the same UA
+- avoid spamming/overloading the user with prompts
+- easy to intentionally grant consent (e.g. the UI should be easily discovered)
+- hard to unintentionally grant user consent (e.g. the UI should prevent clickjacking)
+- provides clear methods for the user to revoke consent and verify the current state of consent
+
+A Trusted UI may be immersive or non-immersive, provided it conforms to the above properties. A Trusted Immersive UI does not exit immersive mode. UAs are not required to provide a Trusted Immersive UI and may instead temporarily pause/exit immersive mode and provide a non-immersive Trusted UI.
+
+Examples of Trusted UIs are:
+- the default 2D mode browser in non-immersive mode
+- a prompt shown within immersive mode which can only be interacted with via a reserved hardware button
+- pausing the immersive session to show a form of non-spoofable native system environment
 
 ## User intention
 It is often necessary to be sure of user intent before exposing sensitive information or allowing actions with a significant effect on the user's experience. This intent may be communicated or observed in a number of ways.
@@ -102,9 +126,6 @@ It is often useful to get explicit consent from the user before exposing sensiti
 
 ### Duration of consent
 It is recommended that once explicit consent is granted for a specific [origin](https://html.spec.whatwg.org/multipage/origin.html) that this consent persist until the [browsing context](https://html.spec.whatwg.org/multipage/browsers.html#browsing-context) has ended. User agents may choose to lengthen or shorten this consent duration based upon implicit or explicit signals of user intent, but implementations are advised to exercise caution when deviating from this recommendation, particularly when relying on implicit signals.
-
-### Querying consent status
-**TODO** Fill this in with what is agreed upon in [#722](https://github.com/immersive-web/webxr/issues/722) and [#725](https://github.com/immersive-web/webxr/issues/725).
 
 ## Data adjustments
 In some cases, security and privacy threats can be mitigated through throttling, quantizing, rounding, limiting, or otherwise adjusting the data reported from the WebXR APIs. This may sometimes be necessary to avoid fingerprinting, even in situations when user intent has been established.  However, data adjustment mitigations can only be used in situations which would not result in user discomfort.
@@ -159,7 +180,6 @@ For every call to `XRFrame.getPose()`, the UA must ensure that:
 * The request originates from the document which owns the `XRFrame`'s `XRSession`
 * The document is [visible and has focus](#visibility-and-focus)
 * The `XRSession.visibility` is set to `visible` 
-* **TODO** address issues [#696](https://github.com/immersive-web/webxr/issues/696) and [#724](https://github.com/immersive-web/webxr/issues/724)
 
 > Note: On some systems it is possible that XRPose data may allow a site to fingerprint a device through sensor calibration data (ref: [1](https://www.ieee-security.org/TC/SP2019/papers/405.pdf), [2](https://arxiv.org/pdf/1605.08763.pdf), [3](https://arxiv.org/pdf/1503.01874.pdf)). This risk may vary depending upon hardware, operating system, and the methods used to generate pose data from sensors. User agents must either mitigate such fingerprinting risk, or be sure of user intent before exposing such data.
 
