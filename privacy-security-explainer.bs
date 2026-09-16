@@ -9,15 +9,11 @@ Repository: immersive-web/webxr
 Level: none
 Mailing List Archives: https://lists.w3.org/Archives/Public/public-immersive-web-wg/
 
-Editor: 
-Abstract: 
+Editor: Brandon Jones 87824, Google https://google.com/, bajones@google.com
+Abstract: This document provides non-normative guidance on WebXR security and privacy. 
+  The WebXR Device API enables developers to build content for AR and VR hardware that uses one or more sensors to infer information about the real world, and may then present information about the real world either to developers or directly to the end user. In such systems there are a wide range of input sensor types used (cameras, accelerometers, etc), and a variety of real-world data generated. This data is what allows web developers to author WebXR-based experiences. It also enables developers to infer information about users such as profiling them, fingerprinting their device, and input sniffing. Due to the nature of the Web, WebXR has a higher responsibility to protect users from malicious data usage than XR experiences delivered through closed ecosystem app stores.
 Markup Shorthands: markdown yes
 </pre>
-
-
-# Privacy and security
-
-The WebXR Device API enables developers to build content for AR and VR hardware that uses one or more sensors to infer information about the real world, and may then present information about the real world either to developers or directly to the end user. In such systems there are a wide range of input sensor types used (cameras, accelerometers, etc), and a variety of real-world data generated. This data is what allows web developers to author WebXR-based experiences. It also enables developers to infer information about users such as profiling them, fingerprinting their device, and input sniffing. Due to the nature of the Web, WebXR has a higher responsibility to protect users from malicious data usage than XR experiences delivered through closed ecosystem app stores.
 
 <!-- START doctoc generated TOC please keep comment here to allow auto update -->
 <!-- DON'T EDIT THIS SECTION, INSTEAD RE-RUN doctoc TO UPDATE -->
